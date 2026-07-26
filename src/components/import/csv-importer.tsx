@@ -9,7 +9,7 @@ import { rowToLead, suggestMapping, type ImportField } from "@/features/importin
 import { withoutDuplicates } from "@/features/importing/duplicate-detector";
 
 const fields: { key: ImportField; label: string; required?: boolean }[] = [
-  { key: "name", label: "Nombre", required: true },
+  { key: "name", label: "Nombre (o usuario)", required: true },
   { key: "email", label: "Email" },
   { key: "phone", label: "Teléfono" },
   { key: "company", label: "Empresa" },
@@ -17,6 +17,15 @@ const fields: { key: ImportField; label: string; required?: boolean }[] = [
   { key: "industry", label: "Sector" },
   { key: "country", label: "País" },
   { key: "source", label: "Fuente" },
+  { key: "socialPlatform", label: "Red social" },
+  { key: "socialHandle", label: "Usuario / @handle" },
+  { key: "socialProfileUrl", label: "URL del perfil" },
+  { key: "followerCount", label: "Seguidores" },
+  { key: "socialEngagementRate", label: "Engagement (%)" },
+  { key: "directMessages", label: "Mensajes directos" },
+  { key: "postComments", label: "Comentarios" },
+  { key: "socialClicks", label: "Clics sociales" },
+  { key: "campaign", label: "Campaña" },
   { key: "companySize", label: "N.º empleados" },
   { key: "estimatedBudget", label: "Presupuesto" },
   { key: "notes", label: "Notas" },
@@ -38,7 +47,7 @@ export function CsvImporter() {
   }
 
   async function importRows() {
-    if (!parsed || !mapping.name) return;
+    if (!parsed || (!mapping.name && !mapping.socialHandle)) return;
     const incoming = parsed.rows.map((row) => rowToLead(row, mapping, "default")).filter((lead) => lead !== null);
     const unique = withoutDuplicates(incoming, await db.leads.toArray());
     await db.leads.bulkAdd(unique);
@@ -49,9 +58,9 @@ export function CsvImporter() {
   return (
     <div>
       <div className="mb-7">
-        <p className="mb-2 text-xs font-bold uppercase tracking-[.14em] text-[#116149]">Entrada de datos</p>
+        <p className="mb-2 text-xs font-bold uppercase tracking-[.14em] text-[#116149]">CSV · CRM · RRSS</p>
         <h1 className="text-3xl font-bold tracking-[-.045em]">Importar leads</h1>
-        <p className="mt-2 text-sm text-[#69736d]">Mapeamos encabezados automáticamente y nunca enviamos el archivo fuera del navegador.</p>
+        <p className="mt-2 text-sm text-[#69736d]">Importa contactos comerciales o leads de redes sociales. Los encabezados se reconocen automáticamente.</p>
       </div>
       <div className="grid gap-5 xl:grid-cols-[1fr_340px]">
         <section className="card p-5 sm:p-7">
@@ -91,7 +100,7 @@ export function CsvImporter() {
               {parsed.errors.length > 0 && <p className="mt-4 rounded-lg bg-[#fff4e5] p-3 text-xs text-[#845b16]">{parsed.errors.slice(0, 3).join(" · ")}</p>}
               <div className="mt-7 flex items-center justify-between gap-3">
                 <button className="button-secondary" onClick={() => setParsed(null)}>Cambiar archivo</button>
-                <button className="button-primary" disabled={!mapping.name} onClick={importRows}>Importar {parsed.rows.length} filas <ArrowRight size={16} /></button>
+                <button className="button-primary" disabled={!mapping.name && !mapping.socialHandle} onClick={importRows}>Importar {parsed.rows.length} filas <ArrowRight size={16} /></button>
               </div>
               {message && <div className="mt-4 flex items-center gap-2 rounded-xl bg-[#e8f5ec] p-3 text-sm font-semibold text-[#116149]"><CheckCircle2 size={17} /> {message}</div>}
             </div>
@@ -99,7 +108,8 @@ export function CsvImporter() {
         </section>
         <aside className="space-y-4">
           <div className="card p-5"><ShieldCheck className="mb-4 text-[#116149]" /><h3 className="font-semibold">Procesamiento privado</h3><p className="mt-2 text-sm leading-6 text-[#707a74]">El CSV se interpreta y almacena en IndexedDB. No existe una subida a servidor.</p></div>
-          <div className="card p-5"><h3 className="font-semibold">Duplicados</h3><p className="mt-2 text-sm leading-6 text-[#707a74]">Se comparan primero email, después teléfono y finalmente empresa + nombre. Los repetidos se omiten.</p></div>
+          <div className="card p-5"><h3 className="font-semibold">Compatible con RRSS</h3><p className="mt-2 text-sm leading-6 text-[#707a74]">Instagram, LinkedIn, TikTok, Facebook, X y YouTube. Reconoce usuario, seguidores, engagement, mensajes, comentarios y campaña.</p></div>
+          <div className="card p-5"><h3 className="font-semibold">Duplicados</h3><p className="mt-2 text-sm leading-6 text-[#707a74]">Se comparan email, teléfono, plataforma + usuario y finalmente empresa + nombre.</p></div>
         </aside>
       </div>
     </div>

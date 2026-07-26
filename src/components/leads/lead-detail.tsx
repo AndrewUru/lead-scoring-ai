@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useLiveQuery } from "dexie-react-hooks";
-import { ArrowLeft, Check, X } from "lucide-react";
+import { Activity, ArrowLeft, AtSign, Check, ExternalLink, MessageCircle, MousePointerClick, Users, X } from "lucide-react";
 import { db } from "@/db/database";
 import { ScoreBadge } from "@/components/score-badge";
 
@@ -17,7 +17,16 @@ export function LeadDetail({ leadId }: { leadId: string }) {
     <div>
       <Link href="/leads" className="mb-5 inline-flex items-center gap-2 text-sm font-semibold text-[#65706a]"><ArrowLeft size={16} /> Volver a leads</Link>
       <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
-        <div><h1 className="text-3xl font-bold tracking-[-.045em]">{lead.name}</h1><p className="mt-2 text-sm text-[#69736d]">{lead.jobTitle ?? "Cargo desconocido"} · {lead.company ?? "Empresa desconocida"}</p></div>
+        <div>
+          <h1 className="text-3xl font-bold tracking-[-.045em]">{lead.name}</h1>
+          <p className="mt-2 text-sm text-[#69736d]">{lead.jobTitle ?? "Cargo desconocido"} · {lead.company ?? "Empresa desconocida"}</p>
+          {lead.socialHandle && (
+            <div className="mt-3 flex items-center gap-2 text-sm font-semibold capitalize text-[#116149]">
+              <AtSign size={15} />{lead.socialHandle.replace(/^@/, "")} · {lead.socialPlatform}
+              {lead.socialProfileUrl && <a href={lead.socialProfileUrl} target="_blank" rel="noreferrer" aria-label="Abrir perfil social"><ExternalLink size={14} /></a>}
+            </div>
+          )}
+        </div>
         {lead.score && <div className="flex items-center gap-3"><ScoreBadge status={lead.score.status} /><span className="metric-number text-4xl font-semibold">{lead.score.total}</span><span className="text-sm text-[#8a938e]">/100</span></div>}
       </div>
       {!lead.score ? <div className="card p-8 text-center">Este lead aún no tiene scoring. Usa “Puntuar todos” en la lista de leads.</div> : (
@@ -35,6 +44,26 @@ export function LeadDetail({ leadId }: { leadId: string }) {
             <div className="mt-7 rounded-xl bg-[#edf5ef] p-4"><div className="text-xs font-bold uppercase tracking-wider text-[#116149]">Siguiente acción</div><p className="mt-2 font-semibold">{lead.score.recommendedAction}</p></div>
           </section>
           <aside className="space-y-5">
+            {lead.socialPlatform && (
+              <section className="card p-5">
+                <h2 className="mb-4 font-semibold">Actividad en RRSS</h2>
+                <div className="grid grid-cols-2 gap-3">
+                  {[
+                    { label: "Seguidores", value: lead.followerCount ?? 0, icon: Users },
+                    { label: "Engagement", value: `${lead.socialEngagementRate ?? 0}%`, icon: Activity },
+                    { label: "Mensajes", value: lead.directMessages ?? 0, icon: MessageCircle },
+                    { label: "Clics", value: lead.socialClicks ?? 0, icon: MousePointerClick },
+                  ].map(({ label, value, icon: Icon }) => (
+                    <div key={label} className="rounded-xl bg-[#f4f7f4] p-3">
+                      <Icon size={15} className="mb-2 text-[#116149]" />
+                      <div className="metric-number text-xl font-semibold">{value}</div>
+                      <div className="mt-1 text-[11px] text-[#77817b]">{label}</div>
+                    </div>
+                  ))}
+                </div>
+                {lead.campaign && <p className="mt-4 text-xs text-[#69736d]">Campaña: <b>{lead.campaign}</b></p>}
+              </section>
+            )}
             <section className="card p-5"><h2 className="mb-4 font-semibold">Señales positivas</h2><div className="space-y-3">{lead.score.positiveSignals.map((signal) => <div key={signal} className="flex gap-3 text-sm"><Check className="mt-0.5 shrink-0 text-[#16825f]" size={16} />{signal}</div>)}</div></section>
             <section className="card p-5"><h2 className="mb-4 font-semibold">Alertas</h2><div className="space-y-3">{lead.score.negativeSignals.map((signal) => <div key={signal} className="flex gap-3 text-sm"><X className="mt-0.5 shrink-0 text-[#c85d49]" size={16} />{signal}</div>)}</div></section>
             <div className="px-1 text-xs text-[#8a938e]">Confianza: {Math.round(lead.score.confidence * 100)}% · Motor v{lead.score.scoringVersion}</div>

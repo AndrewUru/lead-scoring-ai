@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useState } from "react";
-import { Search, Sparkles, Upload } from "lucide-react";
+import { AtSign, Search, Sparkles, Upload } from "lucide-react";
 import { db } from "@/db/database";
 import { ScoreBadge } from "@/components/score-badge";
 import { EmptyState } from "@/components/empty-state";
@@ -16,7 +16,7 @@ export function LeadsView() {
   const [query, setQuery] = useState("");
   const [working, setWorking] = useState(false);
   const filtered = (leads ?? []).filter((lead) =>
-    `${lead.name} ${lead.company ?? ""} ${lead.email ?? ""}`.toLowerCase().includes(query.toLowerCase()),
+    `${lead.name} ${lead.company ?? ""} ${lead.email ?? ""} ${lead.socialHandle ?? ""} ${lead.socialPlatform ?? ""}`.toLowerCase().includes(query.toLowerCase()),
   );
 
   async function scoreAll() {
@@ -58,7 +58,7 @@ export function LeadsView() {
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#e4e9e5] p-4">
           <label className="relative min-w-64 flex-1 sm:max-w-sm">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8a938e]" size={16} />
-            <input className="field pl-9" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar nombre, empresa o email…" />
+            <input className="field pl-9" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar nombre, empresa, email o @usuario…" />
           </label>
           <span className="text-xs font-semibold text-[#77817b]">{filtered.length} resultados</span>
         </div>
@@ -66,14 +66,14 @@ export function LeadsView() {
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead className="bg-[#fafbf9] text-[11px] uppercase tracking-[.08em] text-[#858f89]">
-                <tr><th className="px-5 py-3">Contacto</th><th className="px-4 py-3">Empresa</th><th className="px-4 py-3">Sector</th><th className="px-4 py-3">Estado</th><th className="px-4 py-3 text-right">Score</th><th className="px-5 py-3" /></tr>
+                <tr><th className="px-5 py-3">Contacto</th><th className="px-4 py-3">Empresa</th><th className="px-4 py-3">Canal</th><th className="px-4 py-3">Estado</th><th className="px-4 py-3 text-right">Score</th><th className="px-5 py-3" /></tr>
               </thead>
               <tbody>
                 {filtered.map((lead) => (
                   <tr key={lead.id} className="border-t border-[#edf0ee] hover:bg-[#fafbf9]">
-                    <td className="px-5 py-4"><div className="font-semibold">{lead.name}</div><div className="text-xs text-[#85908a]">{lead.email ?? "Sin email"}</div></td>
+                    <td className="px-5 py-4"><div className="font-semibold">{lead.name}</div><div className="flex items-center gap-1 text-xs text-[#85908a]">{lead.socialHandle ? <><AtSign size={11} />{lead.socialHandle.replace(/^@/, "")}</> : lead.email ?? "Sin contacto"}</div></td>
                     <td className="px-4 py-4">{lead.company ?? "—"}</td>
-                    <td className="px-4 py-4 text-[#647069]">{lead.industry ?? "—"}</td>
+                    <td className="px-4 py-4"><span className="capitalize text-[#647069]">{lead.socialPlatform ?? lead.source ?? "Directo"}</span>{lead.campaign && <div className="text-[11px] text-[#929b96]">{lead.campaign}</div>}</td>
                     <td className="px-4 py-4">{lead.score ? <ScoreBadge status={lead.score.status} /> : <span className="text-xs text-[#8b948f]">Pendiente</span>}</td>
                     <td className="metric-number px-4 py-4 text-right text-lg font-semibold">{lead.score?.total ?? "—"}</td>
                     <td className="px-5 py-4 text-right"><Link href={`/leads/${lead.id}`} className="text-xs font-bold text-[#116149]">Ver detalle</Link></td>

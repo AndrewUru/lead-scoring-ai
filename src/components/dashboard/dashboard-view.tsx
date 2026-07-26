@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useLiveQuery } from "dexie-react-hooks";
-import { ArrowRight, CircleAlert, Flame, Gauge, Plus, Users } from "lucide-react";
+import { ArrowRight, Flame, Gauge, Plus, Share2, Users } from "lucide-react";
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import { db } from "@/db/database";
 import { ScoreBadge } from "@/components/score-badge";
@@ -20,6 +20,7 @@ export function DashboardView() {
   const total = leads?.length ?? 0;
   const scored = leads?.filter((lead) => lead.score) ?? [];
   const average = scored.length ? Math.round(scored.reduce((sum, lead) => sum + (lead.score?.total ?? 0), 0) / scored.length) : 0;
+  const socialLeads = leads?.filter((lead) => lead.socialPlatform).length ?? 0;
   const data = statusConfig.map((status) => ({
     ...status,
     value: scored.filter((lead) => lead.score?.status === status.key).length,
@@ -41,7 +42,7 @@ export function DashboardView() {
           { label: "Total de leads", value: total, hint: "en este espacio", icon: Users },
           { label: "Score promedio", value: average, hint: scored.length ? `${scored.length} analizados` : "sin analizar", icon: Gauge },
           { label: "Leads calientes", value: data[0].value, hint: "prioridad inmediata", icon: Flame },
-          { label: "Pendientes", value: total - scored.length, hint: "por analizar", icon: CircleAlert },
+          { label: "Leads de RRSS", value: socialLeads, hint: `${total - scored.length} pendientes de análisis`, icon: Share2 },
         ].map(({ label, value, hint, icon: Icon }) => (
           <article key={label} className="card p-5">
             <div className="mb-5 flex items-center justify-between text-sm text-[#69736d]">
@@ -97,7 +98,7 @@ export function DashboardView() {
                 <tbody>
                   {leads.slice(-6).reverse().map((lead) => (
                     <tr key={lead.id} className="border-t border-[#edf0ee]">
-                      <td className="px-5 py-3.5"><div className="font-semibold">{lead.name}</div><div className="text-xs text-[#8a938e]">{lead.email ?? "Sin email"}</div></td>
+                      <td className="px-5 py-3.5"><div className="font-semibold">{lead.name}</div><div className="text-xs capitalize text-[#8a938e]">{lead.socialHandle ? `${lead.socialPlatform} · ${lead.socialHandle}` : lead.email ?? "Sin contacto"}</div></td>
                       <td className="px-4 py-3.5 text-[#59635e]">{lead.company ?? "—"}</td>
                       <td className="px-4 py-3.5">{lead.score ? <ScoreBadge status={lead.score.status} /> : <span className="text-xs text-[#929b96]">Pendiente</span>}</td>
                       <td className="metric-number px-5 py-3.5 text-right text-lg font-semibold">{lead.score?.total ?? "—"}</td>

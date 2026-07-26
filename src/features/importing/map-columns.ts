@@ -47,14 +47,25 @@ export function rowToLead(
   workspaceId: string,
 ): Lead | null {
   const get = (field: ImportField) => mapping[field] ? row[mapping[field] as string]?.trim() : "";
-  const name = get("name");
+  const name = get("name") || get("socialHandle");
   if (!name) return null;
   const now = new Date().toISOString();
   const number = (value: string) => value ? Number(value.replace(/[^\d.,-]/g, "").replace(",", ".")) || undefined : undefined;
   const platform = get("socialPlatform").toLowerCase();
-  const supportedPlatforms = ["instagram", "linkedin", "tiktok", "facebook", "x", "youtube"] as const;
   const socialPlatform = platform
-    ? supportedPlatforms.find((item) => platform.includes(item)) ?? "other"
+    ? platform.includes("instagram") || platform === "ig"
+      ? "instagram"
+      : platform.includes("linkedin")
+        ? "linkedin"
+        : platform.includes("tiktok")
+          ? "tiktok"
+          : platform.includes("facebook") || platform === "fb"
+            ? "facebook"
+            : platform === "x" || platform.includes("twitter")
+              ? "x"
+              : platform.includes("youtube")
+                ? "youtube"
+                : "other"
     : undefined;
   return {
     id: crypto.randomUUID(),
