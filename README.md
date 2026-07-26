@@ -1,59 +1,37 @@
-# MVP de Lead Scoring con IA (Next.js)
+# LocalLead AI
 
-Este proyecto es un MVP para analizar y puntuar leads mediante Inteligencia Artificial.
+Aplicación local-first para importar, analizar, puntuar y segmentar leads sin enviar información a servicios externos.
 
-## 🧠 Funcionalidades
+## Características
 
-- Registro / Login de usuarios
-- Subida de leads (CSV o formulario manual)
-- Análisis de datos con IA (API externa como OpenAI)
-- Visualización del scoring en tabla y gráficos
-- Exportación de resultados
+- Importación de CSV con mapeo automático de columnas
+- Detección de duplicados por email, teléfono o identidad
+- Scoring comercial configurable y explicable
+- Similitud semántica local con WebGPU y respaldo WASM
+- Desglose de encaje, intención, engagement, calidad y semántica
+- Segmentos dinámicos
+- Dashboard y gráficos
+- Copias de seguridad JSON
+- Persistencia mediante IndexedDB y Dexie
+- Sin OpenAI, claves API ni backend
 
----
+## Tecnología
 
-## 📁 Estructura del proyecto
+Next.js 16, React 19, TypeScript, IndexedDB/Dexie, Transformers.js, Tailwind CSS, Recharts y Papa Parse.
 
-```
-lead-scoring-mvp/
-├── app/
-│   ├── layout.tsx
-│   ├── page.tsx
-│   ├── upload/page.tsx         # Subida de CSV o leads manuales
-│   ├── dashboard/page.tsx      # Resultados y visualización
-│   └── api/score/route.ts      # Endpoint para hacer el scoring con IA
-├── components/
-│   ├── Navbar.tsx
-│   ├── LeadTable.tsx
-│   └── UploadForm.tsx
-├── lib/
-│   └── openai.ts               # Función para consumir IA
-├── styles/
-│   └── globals.css
-├── public/
-├── utils/
-│   └── parseCSV.ts             # Conversión de CSV a JSON
-├── .env.local
-├── tailwind.config.js
-├── next.config.js
-└── package.json
-```
+## Ejecución
 
----
-
-## 🚀 Siguientes pasos
-
-1. Instalar dependencias:
 ```bash
 npm install
-```
-
-2. Configurar `.env.local`:
-```
-OPENAI_API_KEY=tu_clave
-```
-
-3. Ejecutar local:
-```bash
 npm run dev
 ```
+
+Abre [http://localhost:3000](http://localhost:3000).
+
+## Privacidad
+
+Los leads permanecen en el navegador. La aplicación no incluye rutas de scoring en servidor ni depende de una base de datos externa. El modelo se descarga la primera vez que se activa su inferencia, se ejecuta en el dispositivo y queda en la caché del navegador. El directorio `public/models/` está preparado para distribuir modelos ONNX propios.
+
+## Limitaciones
+
+Los datos dependen del almacenamiento del navegador. Crea copias de seguridad periódicas desde Configuración.
